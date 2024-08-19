@@ -7,7 +7,7 @@ const userSchema = mongoose.Schema({
     email:{
         type:String,
         unique:true,
-        match:['/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g', 'invalid Email Address'],
+        match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'invalid Email Address'],
         trim:true
     },
     password:{
@@ -15,10 +15,10 @@ const userSchema = mongoose.Schema({
         minLength:[8, 'password cannot be less than 8 characters'],
         // maxLength:[32, 'password cannot be more than 32 characters'],
     },
-    Address:{
+    address:{
         type:String,
     },
-    Phone:{
+    phone:{
         type:String,
     },
     avatar:{
