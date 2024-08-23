@@ -109,6 +109,19 @@ const loginUser = async (req, res) => {
     }
 }
 
+const logout = async (req, res) => {
+
+    res.cookie('token', '', {
+        path: '/',
+        httpOnly: true,
+        expires: new Date(0),
+        sameSite: 'none',
+        secure: true
+    })
+   return  res.status(200).json({msg: "logout successfully" })
+}
+
+
 const updateProfile = async (req, res) => {
     const { id } = req.params
     const { address, phone, avatar } = req.body;
@@ -140,5 +153,5 @@ const updateProfile = async (req, res) => {
 
 
 module.exports = {
-    Register, loginUser, updateProfile
+    Register, loginUser, updateProfile, logout
 }
