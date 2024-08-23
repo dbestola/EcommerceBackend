@@ -1,6 +1,14 @@
 const UserModel = require("../Models/user")
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 
+
+
+
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '2h' })
+}
 
 
 const Register = async (req, res) => {
@@ -14,10 +22,40 @@ const Register = async (req, res) => {
             return res.status(400).json({ msg: 'Please fill all required field!' })
         }
 
-        const createdUser = UserModel.create({ name, email, password })
+        if (password.length < 8) {
+            return res.status(400).json({ msg: 'Password cannot be less than 8 xx' })
+        }
+
+
+        const UserExists = await UserModel.findOne({ email })
+
+        if (UserExists) {
+            return res.status(400).json({ msg: 'email already Exist try another!' })
+        }
+
+        // pawword hashing
+
+        const salt = bcrypt.genSaltSync(10);
+        const hashedPassword = bcrypt.hashSync(password, salt);
+
+        const createdUser = await UserModel.create({
+            name: name,
+            email: email,
+            password: hashedPassword
+        })
+
+        const Token = generateToken(createdUser._id)
+        res.cookie('token', Token, {
+            path: '/',
+            httpOnly: true,
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 2),
+            sameSite: 'none',
+            secure: true
+        })
 
         if (createdUser) {
-            return res.status(200).json({ msg: 'user created successfully' })
+            const { _id, name, email } = createdUser
+            return res.status(201).json({ msg: 'user created successfully', _id, name, email, Token })
         }
         else {
             return res.status(400).json({ msg: 'failed to create user' })
@@ -31,6 +69,44 @@ const Register = async (req, res) => {
 
     }
 
+}
+
+const loginUser = async (req, res) => {
+    const { email, password } = req.body
+
+    try {
+        if (!email || !password) {
+            return res.status(400).json({ msg: 'Please add email and password!' })
+        }
+
+        const UserExist = await UserModel.findOne({ email })
+
+        if (!UserExist) {
+            return res.status(400).json({ msg: 'user not found please register!' })
+        }
+        const passwordIsCorrect = await bcrypt.compare(password, UserExist.password)
+        
+
+        const Token = generateToken(UserExist._id)
+
+        res.cookie('token', Token, {
+            path: '/',
+            httpOnly: true,
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 2),
+            sameSite: 'none',
+            secure: true
+        })
+
+        if (UserExist && passwordIsCorrect) {
+            const { _id, name, email } = UserExist
+            res.status(200).json({ _id, name, email })
+        }
+        else{
+            res.status(400).json({msg:"password or email incorrect"})
+        }
+    } catch (error) {
+        res.status(500).json({ mgs: 'invalid user' })
+    }
 }
 
 const updateProfile = async (req, res) => {
@@ -64,6 +140,5 @@ const updateProfile = async (req, res) => {
 
 
 module.exports = {
-    Register,
-    updateProfile
+    Register, loginUser, updateProfile
 }
