@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer')
+const env = require('dotenv').config()
 
 
 const sendmail = (send_to, subject, body) => {
@@ -6,8 +7,8 @@ const sendmail = (send_to, subject, body) => {
         host:'smtp.gmail.com',
         port:587,
         auth:{
-            user:"olanrewajuoladimeji5@gmail.com",
-            pass:"lnmxmcwawpzeakhu"
+            user: process.env.MAIL_PORT ,
+            pass: process.env.PASS_PORT
         },
         tls:{
             rejectUnaauthorized: true,
