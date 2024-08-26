@@ -16,7 +16,7 @@ const sendmail = (send_to, subject, body) => {
      
     })
     const options = {
-        from: 'olanrewajuoladimeji5@gmail.com',
+        from: process.env.MAIL_PORT ,
         to: send_to ,
         replyTo: 'support@gmail.com',
         subject: subject,
