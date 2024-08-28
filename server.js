@@ -2,6 +2,7 @@ const express = require('express')
 const env = require('dotenv').config()
 const mongoose = require('mongoose');
 const Route = require('./Routes/userRoutes');
+const cookieParser = require('cookie-parser')
 
 
 // initialize express as a app
@@ -9,7 +10,10 @@ const App = express()
 
 // middleware
 App.use(express.json())
+App.use(cookieParser())
 App.use(express.urlencoded({extended:false}))
+
+
 
 // route middleware
 
