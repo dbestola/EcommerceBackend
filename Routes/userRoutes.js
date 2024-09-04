@@ -15,7 +15,7 @@ Route.put('/resetpassword/:resetToken', resetPassword);
 Route.put('/updatepassword', protect, updatePassword);  
 Route.get('/getloggedinstatus', getLoggedInStatus); 
 Route.get('/sendmail', sendmail )
-Route.put('/update/:id',  protect, updateProfile )
+Route.put('/update/:id',upload.single('avatar'), updateProfile )
 Route.post('/addimage', upload.single('image'), addimage )
 
 

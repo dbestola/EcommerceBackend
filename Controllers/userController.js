@@ -2,6 +2,7 @@ const UserModel = require("../Models/user")
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendmail = require("../Utills/sendMail");
+const cloudinary = require('cloudinary').v2;
 
 
 
@@ -240,35 +241,44 @@ const updatePassword = async (req, res) => {
 };
 
 
-
 const updateProfile = async (req, res) => {
-    const { id } = req.params
-    const { address, phone, avatar } = req.body;
+    const { id } = req.params;
+    const { address, phone } = req.body;
+    const avatar = req.file; // Assumes you are using multer for file uploads
 
     try {
+        // Initialize the update data with address and phone
+        let updateData = { address, phone };
 
-        const user = await UserModel.findByIdAndUpdate(
-            { _id: id },
-            {
-                $set: {
-                    address,
-                    phone,
-                    avatar
-                }
-            },
-            { new: true, runValidators: true }
-        )
-        if (!user) {
-            return res.status(400).json({ msg: 'user not found' })
+        if (avatar) {
+            // Upload the avatar to Cloudinary
+            const uploadedFile = await cloudinary.uploader.upload(avatar.path, {
+                folder: 'ecommerceBackend',
+                resource_type: 'auto',
+            });
+
+            // If upload is successful, add the avatar URL to the update data
+            updateData.avatar = uploadedFile.url;
         }
-        else {
+
+        // Update the user's profile
+        const user = await UserModel.findByIdAndUpdate(
+            id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+
+        // Check if the user was found and updated
+        if (!user) {
+            return res.status(400).json({ msg: 'User not found' });
+        } else {
             return res.status(200).json({ msg: 'Profile updated successfully', updatedUser: user });
         }
     } catch (error) {
-        return res.status(500).json(error.message)
+        return res.status(500).json({ error: error.message });
     }
+};
 
-}
 
 const getLoggedInStatus = async (req, res) => {
 
@@ -294,11 +304,37 @@ const getLoggedInStatus = async (req, res) => {
 
 }
 
-const addimage = (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ msg: 'No file uploaded' });
+const addimage = async (req, res) => {
+
+    const image  = req.file
+
+    try {
+        if (!image) {
+            return res.status(400).json({ msg: 'No file uploaded' });
+        }
+
+        const uploadedFile = await cloudinary.uploader.upload(image.path, {
+            folder: 'ecommerceBackend',
+            resource_type: 'auto'
+        })
+
+        console.log(uploadedFile.url);
+        return res.status(200).json({ msg: 'File uploaded successfully', file: req.file });
+
+      
+     
+
+    } catch (error) {
+        // console.log({ msg: error });
+        res.status(500).json(error.message)
+
     }
-    return res.status(200).json({ msg: 'File uploaded successfully', file: req.file });
+
+
+
+
+
+
 };
 
 
