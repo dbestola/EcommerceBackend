@@ -123,6 +123,7 @@ const logout = async (req, res) => {
         sameSite: 'none',
         secure: true
     })
+    
     return res.status(200).json({ msg: "logout successfully" })
 }
 
