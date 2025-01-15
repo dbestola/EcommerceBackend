@@ -47,6 +47,7 @@ const Register = async (req, res) => {
         })
 
         const Token = generateToken(createdUser._id)
+        
         res.cookie('token', Token, {
             path: '/',
             httpOnly: true,
